@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>EmailJS - Multi-templates et lots</title>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+</head>
+<body>
+<h1>Envoyer des emails par lots et template</h1>
+
+<label for="templateSelect">Choisir un template :</label>
+<select id="templateSelect"></select>
+
+<div id="lotsContainer" style="margin-top:20px;"></div> <!-- Boutons pour les lots -->
+
+<script>
+emailjs.init("ScT_WhLLgCRgSJWt6"); // Clé publique EmailJS
+
+const batchSize = 100; // Nombre d'emails par lot
+const delay = 10000;    // Pause entre les lots en ms
+
+// Définition des templates avec titre et possibilité d'ajouter des emojis/liens
+const templates = [
+  { id: "template_dssfafd", title: "🛒 Message A - Articles en vente" },
+  { id: "template_joboffers", title: "💼 Offres d'emploi" },
+  { id: "template_newsletter", title: "📢 Newsletter Business TV" }
+];
+
+// Remplir le menu déroulant dynamiquement
+const templateSelect = document.getElementById('templateSelect');
+templates.forEach(temp => {
+  const option = document.createElement('option');
+  option.value = temp.id;
+  option.textContent = temp.title;
+  templateSelect.appendChild(option);
+});
+
+// Charger les contacts depuis JSON
+async function loadContacts() {
+  const response = await fetch('contacts.json');
+  const contacts = await response.json();
+  return contacts;
+}
+
+// Créer les boutons pour chaque lot
+function createLotButtons(contacts) {
+  const lotsContainer = document.getElementById('lotsContainer');
+  lotsContainer.innerHTML = '';
+  const totalLots = Math.ceil(contacts.length / batchSize);
+
+  for(let i=1; i<=totalLots; i++){
+    const btn = document.createElement('button');
+    btn.textContent = `Envoyer Lot ${i}`;
+    btn.style.margin = "5px";
+    btn.onclick = () => sendLot(contacts, i);
+    lotsContainer.appendChild(btn);
+  }
+}
+
+// Envoyer un lot avec le template sélectionné
+async function sendLot(contacts, lotNumber){
+  const templateId = templateSelect.value;
+  const start = (lotNumber-1)*batchSize;
+  const end = start+batchSize;
+  const batch = contacts.slice(start, end);
+
+  if(batch.length === 0){
+    alert("❌ Aucun destinataire dans ce lot !");
+    return;
+  }
+
+  alert(`Début envoi Lot ${lotNumber} (${batch.length} emails) avec template "${templateSelect.selectedOptions[0].text}"`);
+
+  for(let person of batch){
+    await emailjs.send(
+      "service_t2oycjs",
+      templateId,
+      { 
+        to_name: person.to_name, 
+        name: "Business TV", 
+        temps: new Date().toLocaleString()
+      }
+    ).then(()=>console.log(`✅ ${person.to_name}`))
+     .catch(err=>console.error(`❌ ${person.to_name}`, err));
+  }
+
+  alert(`✅ Lot ${lotNumber} terminé. Pause de ${delay/1000}s avant prochain lot.`);
+}
+
+// Initialisation
+loadContacts().then(contacts => createLotButtons(contacts));
+</script>
+</body>
+</html>
