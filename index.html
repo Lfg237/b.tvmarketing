@@ -2,33 +2,109 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>EmailJS - b.tv messagerie</title>
+<title>EmailJS - Test Deux Lots</title>
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 <style>
-body { font-family: 'Segoe UI', sans-serif; margin:0; padding:0; background: #f0f4f8; color:#333; }
-header { background: linear-gradient(90deg, #ff7e5f, #feb47b); color:white; padding:20px; display:flex; align-items:center; }
-header img { width:70px; height:70px; border-radius:50%; margin-right:15px; border:2px solid white; }
-header h1 { margin:0; font-size:26px; }
-main { max-width:1000px; margin:20px auto; background:white; padding:25px; border-radius:15px; }
-select, button { padding:10px; margin-bottom:15px; font-size:16px; border-radius:8px; border:1px solid #ccc; }
-button { cursor:pointer; color:white; background: linear-gradient(to right, #6a11cb, #2575fc); border:none; }
-#previewBox, #lotPreview { border-radius:10px; padding:15px; margin:15px 0; background: #fdf6e3; border-left: 6px solid #ff7e5f; max-height:250px; overflow:auto; font-family:'Courier New', monospace; }
-table { width:100%; border-collapse: collapse; margin-top:10px; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  margin:0; padding:0;
+  background: linear-gradient(to right, #f0f4f8, #d9e2ec);
+  color:#333;
+}
+
+header {
+  background: linear-gradient(90deg, #ff7e5f, #feb47b);
+  color:white;
+  padding:20px;
+  display:flex;
+  align-items:center;
+  box-shadow:0 4px 8px rgba(0,0,0,0.2);
+  animation: headerAnim 2s ease-in-out;
+}
+@keyframes headerAnim {
+  0%{transform: translateY(-50px); opacity:0;}
+  100%{transform: translateY(0); opacity:1;}
+}
+
+header img {
+  width:70px; height:70px;
+  border-radius:50%;
+  margin-right:15px;
+  border:2px solid white;
+}
+
+header h1 { margin:0; font-size:26px; text-shadow:1px 1px 2px #333;}
+
+main {
+  max-width:1000px;
+  margin:20px auto;
+  background:white;
+  padding:25px;
+  border-radius:15px;
+  box-shadow:0 0 25px rgba(0,0,0,0.1);
+}
+
+select {
+  width:100%; padding:12px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  margin-bottom:15px;
+  font-size:16px;
+}
+
+button {
+  padding:10px 18px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+  color:white;
+  background: linear-gradient(to right, #6a11cb, #2575fc);
+  margin:5px 0;
+  transition: all 0.3s ease;
+}
+button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(to right, #2575fc, #6a11cb);
+  box-shadow:0 4px 12px rgba(0,0,0,0.2);
+}
+
+#previewBox, #lotPreview {
+  border-radius:10px;
+  padding:15px;
+  margin:15px 0;
+  background: #fdf6e3;
+  border-left: 6px solid #ff7e5f;
+  max-height:250px; overflow:auto;
+  font-family:'Courier New', monospace;
+  color:#333;
+}
+
+table {
+  width:100%; border-collapse: collapse;
+  margin-top:10px;
+}
 table, th, td { border:1px solid #ddd; }
-th { background:#ff7e5f; color:white; padding:10px; }
+th { background:#ff7e5f; color:white; padding:10px;}
 td { padding:8px; }
-.status-success { color:green; font-weight:bold; background:#e6f4ea; }
-.status-error { color:red; font-weight:bold; background:#fce8e6; }
-.status-pending { color:orange; font-weight:bold; background:#fff4e5; }
-#nextLotCountdown { font-weight:bold; color:#333; margin-top:10px; }
-footer { text-align:center; padding:15px; font-size:14px; color:#555; margin-top:20px; }
+.status-success { color:green; font-weight:bold; background:#e6f4ea;}
+.status-error { color:red; font-weight:bold; background:#fce8e6;}
+.status-pending { color:orange; font-weight:bold; background:#fff4e5;}
+
+footer {
+  text-align:center;
+  padding:15px;
+  font-size:14px;
+  color:#555;
+  margin-top:20px;
+}
 </style>
 </head>
 <body>
 
 <header>
   <img src="https://raw.githubusercontent.com/Lfg237/m-dias/main/Polish_20260223_163236698.png" alt="Profil">
-  <h1>b.tv messagerie marketing</h1>
+  <h1>EmailJS Pro - Test Deux Lots</h1>
 </header>
 
 <main>
@@ -48,7 +124,6 @@ footer { text-align:center; padding:15px; font-size:14px; color:#555; margin-top
     <tbody></tbody>
   </table>
   <button id="sendLotBtn">Envoyer ce lot</button>
-  <p id="nextLotCountdown"></p>
 </div>
 </main>
 
@@ -57,45 +132,43 @@ footer { text-align:center; padding:15px; font-size:14px; color:#555; margin-top
 </footer>
 
 <script>
-emailjs.init("ScT_WhLLgCRgSJWt6"); // ton ID service EmailJS
+emailjs.init("ScT_WhLLgCRgSJWt6");
 
-const batchSize = 100;       // taille du lot
-const delay = 5000;           // délai entre les lots en ms
+const batchSize = 2; // 2 emails par lot
+const delay = 5000;   // délai entre les lots en ms
 let contacts = [];
 let currentBatch = [];
-let nextLotReady = true;
+let nextLotReady = true; // indique si le prochain lot peut être envoyé
 
-// Templates nommés
 const templates = [
-  { id: "template_xqc4p09", title: "📰 Newsletter Business TV" },
-  { id: "template_dssfafd", title: "🛒 Articles en vente" }
+  { id:"template_dssfafd", title:"🛒 Articles en vente", content:"Bonjour {{to_name}},\nDécouvrez nos articles : https://business-tv.vercel.app/" },
+  { id:"template_joboffers", title:"💼 Offres d'emploi", content:"Bonjour {{to_name}},\nConsultez les nouvelles offres : https://workshopkmer.vercel.app/#job1" },
+  { id:"template_newsletter", title:"📢 Newsletter Business TV", content:"Bonjour {{to_name}},\nVoici notre newsletter du jour." }
 ];
 
 const templateSelect = document.getElementById('templateSelect');
 const previewBox = document.getElementById('previewBox');
 const lotTableBody = document.querySelector('#lotTable tbody');
+const nextLotCountdown = document.createElement('p');
+nextLotCountdown.id = 'nextLotCountdown';
+document.querySelector('main').appendChild(nextLotCountdown);
 
 // Remplissage du select
-templates.forEach(t => {
+templates.forEach(t=>{
   const option = document.createElement('option');
-  option.value = t.id;
-  option.textContent = t.title;
+  option.value=t.id; option.textContent=t.title;
   templateSelect.appendChild(option);
 });
 
 // Aperçu du template
 document.getElementById('previewBtn').addEventListener('click', ()=>{
-  const selected = templates.find(t => t.id === templateSelect.value);
-  previewBox.textContent = `Aperçu du template : ${selected.title}`;
+  const selected = templates.find(t=>t.id===templateSelect.value);
+  previewBox.textContent = selected.content;
 });
 
 // Chargement des contacts
 async function loadContacts() {
-  // Ajoute tous tes contacts ici
   contacts = [
-  
-
-contacts = [
   {to_name:"Mom", to_email:"mom502615@gmail.com", profile_pic:"https://example.com/mom.png"},
   {to_name:"BTV", to_email:"btv495355@gmail.com", profile_pic:"https://example.com/btv.png"},
   {to_name:"dalia", to_email:"dalyawa529@gmail.com", profile_pic:"https://example.com/dalia.png"},
@@ -115,10 +188,6 @@ contacts = [
   {to_name:"IPRH", to_email:"infoiprh@gmail.com", profile_pic:"https://example.com/user.png"},
   {to_name:"Robert Mbong", to_email:"robertmbong18@gmail.com", profile_pic:"https://example.com/user.png"}
 ];
-
-
-    // … ajoute autant de contacts que nécessaire
-  ];
   createLotButtons();
 }
 
@@ -156,13 +225,13 @@ function startNextLotCountdown() {
   sendBtn.disabled = true;
 
   const countdown = setInterval(() => {
-    document.getElementById('nextLotCountdown').textContent = `Prochain lot disponible dans ${remaining}s`;
+    nextLotCountdown.textContent = `Prochain lot disponible dans ${remaining}s`;
     remaining--;
 
     if (remaining < 0) {
       clearInterval(countdown);
       sendBtn.disabled = false;
-      document.getElementById('nextLotCountdown').textContent = '';
+      nextLotCountdown.textContent = '';
       nextLotReady = true;
     }
   }, 1000);
@@ -184,10 +253,9 @@ document.getElementById('sendLotBtn').addEventListener('click', async ()=>{
         "service_t2oycjs",
         templateId,
         { 
-          to_name: person.to_name,
-          to_email: person.to_email,
-          profile_pic: person.profile_pic,
-          temps: new Date().toLocaleString()
+          to_name: person.to_name, 
+          profile_pic: person.profile_pic, 
+          temps:new Date().toLocaleString() 
         }
       );
       lotTableBody.rows[i].cells[3].innerHTML='✅ Envoyé';
@@ -205,5 +273,6 @@ document.getElementById('sendLotBtn').addEventListener('click', async ()=>{
 
 loadContacts();
 </script>
+
 </body>
 </html>
