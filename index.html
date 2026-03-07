@@ -2,34 +2,33 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>b.tv marketing</title>
+<title>EmailJS - Gestion de Gros Lots</title>
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 <style>
-body { font-family:'Segoe UI', sans-serif; margin:0; padding:0; background:linear-gradient(to right,#f0f4f8,#d9e2ec); color:#333; }
-header { background:linear-gradient(90deg,#ff7e5f,#feb47b); color:white; padding:20px; display:flex; align-items:center; box-shadow:0 4px 8px rgba(0,0,0,0.2); animation:headerAnim 2s ease-in-out;}
-@keyframes headerAnim {0%{transform:translateY(-50px);opacity:0;}100%{transform:translateY(0);opacity:1;}}
-header img { width:70px;height:70px;border-radius:50%;margin-right:15px;border:2px solid white;}
-header h1 { margin:0;font-size:26px;text-shadow:1px 1px 2px #333;}
-main { max-width:1000px;margin:20px auto;background:white;padding:25px;border-radius:15px;box-shadow:0 0 25px rgba(0,0,0,0.1);}
-select { width:100%; padding:12px; border-radius:8px; border:1px solid #ccc; margin-bottom:15px; font-size:16px;}
-button { padding:10px 18px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; color:white; background: linear-gradient(to right,#6a11cb,#2575fc); margin:5px 0; transition:all 0.3s ease;}
-button:hover { transform:scale(1.05); background:linear-gradient(to right,#2575fc,#6a11cb); box-shadow:0 4px 12px rgba(0,0,0,0.2);}
-#previewBox, #lotPreview { border-radius:10px; padding:15px; margin:15px 0; background:#fdf6e3; border-left:6px solid #ff7e5f; max-height:250px; overflow:auto; font-family:'Courier New', monospace; color:#333;}
-table { width:100%; border-collapse:collapse; margin-top:10px;}
+body { font-family: 'Segoe UI', sans-serif; margin:0; padding:0; background: #f0f4f8; color:#333; }
+header { background: linear-gradient(90deg, #ff7e5f, #feb47b); color:white; padding:20px; display:flex; align-items:center; }
+header img { width:70px; height:70px; border-radius:50%; margin-right:15px; border:2px solid white; }
+header h1 { margin:0; font-size:26px; }
+main { max-width:1000px; margin:20px auto; background:white; padding:25px; border-radius:15px; }
+select, button { padding:10px; margin-bottom:15px; font-size:16px; border-radius:8px; border:1px solid #ccc; }
+button { cursor:pointer; color:white; background: linear-gradient(to right, #6a11cb, #2575fc); border:none; }
+#previewBox, #lotPreview { border-radius:10px; padding:15px; margin:15px 0; background: #fdf6e3; border-left: 6px solid #ff7e5f; max-height:250px; overflow:auto; font-family:'Courier New', monospace; }
+table { width:100%; border-collapse: collapse; margin-top:10px; }
 table, th, td { border:1px solid #ddd; }
-th { background:#ff7e5f; color:white; padding:10px;}
-td { padding:8px;}
-.status-success { color:green; font-weight:bold; background:#e6f4ea;}
-.status-error { color:red; font-weight:bold; background:#fce8e6;}
-.status-pending { color:orange; font-weight:bold; background:#fff4e5;}
-footer { text-align:center; padding:15px; font-size:14px; color:#555; margin-top:20px;}
+th { background:#ff7e5f; color:white; padding:10px; }
+td { padding:8px; }
+.status-success { color:green; font-weight:bold; background:#e6f4ea; }
+.status-error { color:red; font-weight:bold; background:#fce8e6; }
+.status-pending { color:orange; font-weight:bold; background:#fff4e5; }
+#nextLotCountdown { font-weight:bold; color:#333; margin-top:10px; }
+footer { text-align:center; padding:15px; font-size:14px; color:#555; margin-top:20px; }
 </style>
 </head>
 <body>
 
 <header>
   <img src="https://raw.githubusercontent.com/Lfg237/m-dias/main/Polish_20260223_163236698.png" alt="Profil">
-  <h1>EmailJS Pro - Envoi par Lots</h1>
+  <h1>EmailJS Pro - Gros Lots</h1>
 </header>
 
 <main>
@@ -58,54 +57,52 @@ footer { text-align:center; padding:15px; font-size:14px; color:#555; margin-top
 </footer>
 
 <script>
-emailjs.init("ScT_WhLLgCRgSJWt6");
+emailjs.init("ScT_WhLLgCRgSJWt6"); // ton ID service EmailJS
 
-// Configuration
-const batchSize = 100;        // emails par lot
-const miniBatchSize = 10;     // mini-lots pour EmailJS
-const delay = 5000;           // pause entre mini-lots en ms
+const batchSize = 100;       // taille du lot
+const delay = 5000;           // délai entre les lots en ms
 let contacts = [];
 let currentBatch = [];
 let nextLotReady = true;
 
-// Templates
+// Templates nommés
 const templates = [
-  { id:"template_dssfafd", title:"🛒 Articles en vente", content:"Bonjour {{to_name}},\nDécouvrez nos articles : https://business-tv.vercel.app/" },
-  { id:"template_joboffers", title:"💼 Offres d'emploi", content:"Bonjour {{to_name}},\nConsultez les nouvelles offres : https://workshopkmer.vercel.app/#job1" },
-  { id:"template_newsletter", title:"📢 Newsletter Business TV", content:"Bonjour {{to_name}},\nVoici notre newsletter du jour." }
+  { id: "template_xqc4p09", title: "📰 Newsletter Business TV" },
+  { id: "template_dssfafd", title: "🛒 Articles en vente" }
 ];
 
 const templateSelect = document.getElementById('templateSelect');
 const previewBox = document.getElementById('previewBox');
 const lotTableBody = document.querySelector('#lotTable tbody');
-const nextLotCountdown = document.getElementById('nextLotCountdown');
 
 // Remplissage du select
-templates.forEach(t=>{
+templates.forEach(t => {
   const option = document.createElement('option');
-  option.value=t.id; option.textContent=t.title;
+  option.value = t.id;
+  option.textContent = t.title;
   templateSelect.appendChild(option);
 });
 
-// Aperçu
+// Aperçu du template
 document.getElementById('previewBtn').addEventListener('click', ()=>{
-  const selected = templates.find(t=>t.id===templateSelect.value);
-  previewBox.textContent = selected.content;
+  const selected = templates.find(t => t.id === templateSelect.value);
+  previewBox.textContent = `Aperçu du template : ${selected.title}`;
 });
 
-// Contacts
+// Chargement des contacts
 async function loadContacts() {
+  // Ajoute tous tes contacts ici
   contacts = [
     {to_name:"Mom", to_email:"mom502615@gmail.com", profile_pic:"https://example.com/mom.png"},
     {to_name:"BTV", to_email:"btv495355@gmail.com", profile_pic:"https://example.com/btv.png"},
     {to_name:"dalia", to_email:"dalyawa529@gmail.com", profile_pic:"https://example.com/dalia.png"},
     {to_name:"recrutement", to_email:"s.recrutementmada@gmail.com", profile_pic:"https://example.com/michel2.png"},
-    // ajoute ici tous tes contacts
+    // … ajoute autant de contacts que nécessaire
   ];
   createLotButtons();
 }
 
-// Création des boutons
+// Création des boutons de lots
 function createLotButtons(){
   const container = document.getElementById('lotsContainer');
   container.innerHTML='';
@@ -118,7 +115,7 @@ function createLotButtons(){
   }
 }
 
-// Affichage lot
+// Affichage d’un lot
 function showLot(lotNumber){
   const start=(lotNumber-1)*batchSize;
   const end=start+batchSize;
@@ -131,69 +128,62 @@ function showLot(lotNumber){
   });
 }
 
-// Compteur
-function startNextLotCountdown(seconds){
-  nextLotReady = false;
-  let remaining = seconds;
+// Compteur avant prochain lot
+function startNextLotCountdown() {
   const sendBtn = document.getElementById('sendLotBtn');
+  let remaining = delay / 1000;
+  nextLotReady = false;
   sendBtn.disabled = true;
 
-  const countdown = setInterval(()=>{
-    nextLotCountdown.textContent = `Prochain mini-lot dans ${remaining}s`;
+  const countdown = setInterval(() => {
+    document.getElementById('nextLotCountdown').textContent = `Prochain lot disponible dans ${remaining}s`;
     remaining--;
-    if(remaining < 0){
+
+    if (remaining < 0) {
       clearInterval(countdown);
-      nextLotCountdown.textContent = '';
       sendBtn.disabled = false;
+      document.getElementById('nextLotCountdown').textContent = '';
       nextLotReady = true;
     }
-  },1000);
+  }, 1000);
 }
 
-// Envoi mini-lots
-async function sendBatch(batch){
-  for(let i=0; i<batch.length; i+=miniBatchSize){
-    const miniBatch = batch.slice(i, i+miniBatchSize);
-    for(let j=0; j<miniBatch.length; j++){
-      const person = miniBatch[j];
-      try{
-        await emailjs.send(
-  "service_t2oycjs",
-  templateSelect.value,
-  { 
-    to_name: person.to_name,
-    to_email: person.to_email,       // <-- ajoute cette ligne
-    profile_pic: person.profile_pic,
-    temps: new Date().toLocaleString()
-  }
-);
-        lotTableBody.rows[i+j].cells[3].innerHTML='✅ Envoyé';
-        lotTableBody.rows[i+j].cells[3].className='status-success';
-      }catch(err){
-        lotTableBody.rows[i+j].cells[3].innerHTML='❌ Erreur';
-        lotTableBody.rows[i+j].cells[3].className='status-error';
-        console.error(person.to_name, err);
-      }
-    }
-    // Pause mini-lot si ce n’est pas le dernier
-    if(i+miniBatchSize < batch.length) await new Promise(res => startNextLotCountdown(delay/1000) || setTimeout(res, delay));
-  }
-}
-
-// Bouton envoyer lot
+// Envoi d’un lot
 document.getElementById('sendLotBtn').addEventListener('click', async ()=>{
   if(!nextLotReady) { alert("Patientez le temps du compte à rebours !"); return; }
   if(currentBatch.length===0){ alert("Sélectionnez un lot !"); return; }
 
-  alert(`Début envoi lot avec template "${templateSelect.value}"`);
-  nextLotReady = false;
-  await sendBatch(currentBatch);
+  const templateId = templateSelect.value;
+  const selectedTemplate = templates.find(t=>t.id===templateId);
+  alert(`Début envoi lot avec template "${selectedTemplate.title}"`);
+
+  for(let i=0;i<currentBatch.length;i++){
+    const person=currentBatch[i];
+    try{
+      await emailjs.send(
+        "service_t2oycjs",
+        templateId,
+        { 
+          to_name: person.to_name,
+          to_email: person.to_email,
+          profile_pic: person.profile_pic,
+          temps: new Date().toLocaleString()
+        }
+      );
+      lotTableBody.rows[i].cells[3].innerHTML='✅ Envoyé';
+      lotTableBody.rows[i].cells[3].className='status-success';
+    }catch(err){
+      lotTableBody.rows[i].cells[3].innerHTML='❌ Erreur';
+      lotTableBody.rows[i].cells[3].className='status-error';
+      console.error(person.to_name, err);
+    }
+  }
+
   alert('Lot terminé ! Pause avant le prochain lot.');
-  startNextLotCountdown(delay/1000);
+  startNextLotCountdown();
 });
 
 loadContacts();
 </script>
-
 </body>
 </html>
