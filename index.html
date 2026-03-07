@@ -158,14 +158,15 @@ async function sendBatch(batch){
       const person = miniBatch[j];
       try{
         await emailjs.send(
-          "service_t2oycjs",
-          templateSelect.value,
-          {
-            to_name: person.to_name,
-            profile_pic: person.profile_pic,
-            temps: new Date().toLocaleString()
-          }
-        );
+  "service_t2oycjs",
+  templateSelect.value,
+  {
+    to_name: person.to_name,
+    to_email: person.to_email,       // <-- ajoute cette ligne
+    profile_pic: person.profile_pic,
+    temps: new Date().toLocaleString()
+  }
+);
         lotTableBody.rows[i+j].cells[3].innerHTML='✅ Envoyé';
         lotTableBody.rows[i+j].cells[3].className='status-success';
       }catch(err){
