@@ -160,7 +160,7 @@ async function sendBatch(batch){
         await emailjs.send(
   "service_t2oycjs",
   templateSelect.value,
-  {
+  { 
     to_name: person.to_name,
     to_email: person.to_email,       // <-- ajoute cette ligne
     profile_pic: person.profile_pic,
