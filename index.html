@@ -2,93 +2,146 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>EmailJS - Multi-templates et lots</title>
+<title>EmailJS - Interface Pro</title>
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<style>
+body { font-family: 'Segoe UI', sans-serif; background:#f5f5f5; margin:0; padding:0;}
+header { background:#4a90e2; color:white; padding:20px; display:flex; align-items:center;}
+header img { width:70px; height:70px; border-radius:50%; margin-right:15px;}
+header h1 { margin:0; font-size:24px; }
+main { max-width:1000px; margin:20px auto; background:white; padding:20px; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.1);}
+select, button { padding:10px; border-radius:5px; border:1px solid #ccc; margin:5px 0; }
+#lotsContainer button { background:#4a90e2; color:white; border:none; cursor:pointer; margin:5px; transition:0.2s; }
+#lotsContainer button:hover { background:#357ABD; }
+#previewBox, #lotPreview { border:1px solid #ccc; padding:15px; margin:15px 0; background:#f0f8ff; border-radius:5px; max-height:300px; overflow:auto; }
+table { width:100%; border-collapse: collapse; margin-top:10px;}
+table, th, td { border:1px solid #ccc; }
+th, td { padding:8px; text-align:left; }
+th { background:#eee; }
+.status-success { color:green; font-weight:bold;}
+.status-error { color:red; font-weight:bold;}
+</style>
 </head>
 <body>
-<h1>Envoyer des emails par lots et template</h1>
 
+<header>
+<img src="https://raw.githubusercontent.com/Lfg237/m-dias/main/Polish_20260223_163236698.png" alt="Profil">
+<h1>EmailJS Pro - Gestion des lots</h1>
+</header>
+
+<main>
 <label for="templateSelect">Choisir un template :</label>
 <select id="templateSelect"></select>
+<button id="previewBtn">Voir Aperçu</button>
 
-<div id="lotsContainer" style="margin-top:20px;"></div> <!-- Boutons pour les lots -->
+<div id="previewBox">Le contenu du message apparaîtra ici...</div>
+
+<h3>Lots disponibles :</h3>
+<div id="lotsContainer"></div>
+
+<div id="lotPreview">
+  <h4>Détails du lot sélectionné :</h4>
+  <table id="lotTable">
+    <thead><tr><th>#</th><th>Nom</th><th>Email</th><th>Statut</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <button id="sendLotBtn">Envoyer ce lot</button>
+</div>
+</main>
 
 <script>
-emailjs.init("ScT_WhLLgCRgSJWt6"); // Clé publique EmailJS
+emailjs.init("ScT_WhLLgCRgSJWt6");
 
-const batchSize = 100; // Nombre d'emails par lot
-const delay = 10000;    // Pause entre les lots en ms
+const batchSize = 100;
+const delay = 10000;
+let contacts = [];
+let currentBatch = [];
 
-// Définition des templates avec titre et possibilité d'ajouter des emojis/liens
 const templates = [
-  { id: "template_dssfafd", title: "🛒 Message A - Articles en vente" },
-  { id: "template_joboffers", title: "💼 Offres d'emploi" },
-  { id: "template_newsletter", title: "📢 Newsletter Business TV" }
+  { id:"template_dssfafd", title:"🛒 Message A - Articles en vente", content:"Bonjour {{to_name}},\nDécouvrez nos articles : https://business-tv.vercel.app/" },
+  { id:"template_joboffers", title:"💼 Offres d'emploi", content:"Bonjour {{to_name}},\nConsultez les nouvelles offres : https://workshopkmer.vercel.app/#job1" },
+  { id:"template_newsletter", title:"📢 Newsletter Business TV", content:"Bonjour {{to_name}},\nVoici notre newsletter du jour." }
 ];
 
-// Remplir le menu déroulant dynamiquement
 const templateSelect = document.getElementById('templateSelect');
-templates.forEach(temp => {
+const previewBox = document.getElementById('previewBox');
+const lotTableBody = document.querySelector('#lotTable tbody');
+
+templates.forEach(t=>{
   const option = document.createElement('option');
-  option.value = temp.id;
-  option.textContent = temp.title;
+  option.value = t.id;
+  option.textContent = t.title;
   templateSelect.appendChild(option);
 });
 
-// Charger les contacts depuis JSON
+// Affichage de l'aperçu
+document.getElementById('previewBtn').addEventListener('click', ()=>{
+  const selected = templates.find(t=>t.id===templateSelect.value);
+  previewBox.textContent = selected.content;
+});
+
+// Charger contacts
 async function loadContacts() {
   const response = await fetch('contacts.json');
-  const contacts = await response.json();
-  return contacts;
+  contacts = await response.json();
+  createLotButtons();
 }
 
-// Créer les boutons pour chaque lot
-function createLotButtons(contacts) {
-  const lotsContainer = document.getElementById('lotsContainer');
-  lotsContainer.innerHTML = '';
+// Création des boutons de lot
+function createLotButtons(){
+  const container = document.getElementById('lotsContainer');
+  container.innerHTML='';
   const totalLots = Math.ceil(contacts.length / batchSize);
-
-  for(let i=1; i<=totalLots; i++){
+  for(let i=1;i<=totalLots;i++){
     const btn = document.createElement('button');
-    btn.textContent = `Envoyer Lot ${i}`;
-    btn.style.margin = "5px";
-    btn.onclick = () => sendLot(contacts, i);
-    lotsContainer.appendChild(btn);
+    btn.textContent=`Lot ${i}`;
+    btn.onclick = ()=>showLot(i);
+    container.appendChild(btn);
   }
 }
 
-// Envoyer un lot avec le template sélectionné
-async function sendLot(contacts, lotNumber){
-  const templateId = templateSelect.value;
+// Afficher les destinataires du lot
+function showLot(lotNumber){
   const start = (lotNumber-1)*batchSize;
   const end = start+batchSize;
-  const batch = contacts.slice(start, end);
-
-  if(batch.length === 0){
-    alert("❌ Aucun destinataire dans ce lot !");
-    return;
-  }
-
-  alert(`Début envoi Lot ${lotNumber} (${batch.length} emails) avec template "${templateSelect.selectedOptions[0].text}"`);
-
-  for(let person of batch){
-    await emailjs.send(
-      "service_t2oycjs",
-      templateId,
-      { 
-        to_name: person.to_name, 
-        name: "Business TV", 
-        temps: new Date().toLocaleString()
-      }
-    ).then(()=>console.log(`✅ ${person.to_name}`))
-     .catch(err=>console.error(`❌ ${person.to_name}`, err));
-  }
-
-  alert(`✅ Lot ${lotNumber} terminé. Pause de ${delay/1000}s avant prochain lot.`);
+  currentBatch = contacts.slice(start,end);
+  lotTableBody.innerHTML='';
+  currentBatch.forEach((c,index)=>{
+    const row = document.createElement('tr');
+    row.innerHTML=`<td>${index+1}</td><td>${c.to_name}</td><td>${c.to_email}</td><td class="status">En attente</td>`;
+    lotTableBody.appendChild(row);
+  });
 }
 
-// Initialisation
-loadContacts().then(contacts => createLotButtons(contacts));
+// Envoyer le lot
+document.getElementById('sendLotBtn').addEventListener('click', async ()=>{
+  if(currentBatch.length===0){ alert("Sélectionnez un lot !"); return; }
+  const templateId = templateSelect.value;
+  const selectedTemplate = templates.find(t=>t.id===templateId);
+  alert(`Début envoi lot avec template "${selectedTemplate.title}"`);
+
+  for(let i=0;i<currentBatch.length;i++){
+    const person=currentBatch[i];
+    const content = selectedTemplate.content.replace("{{to_name}}",person.to_name);
+    try{
+      await emailjs.send(
+        "service_t2oycjs",
+        templateId,
+        { to_name: person.to_name, name:"Business TV", temps:new Date().toLocaleString() }
+      );
+      lotTableBody.rows[i].cells[3].innerHTML='✅ Envoyé';
+      lotTableBody.rows[i].cells[3].className='status-success';
+    }catch(err){
+      lotTableBody.rows[i].cells[3].innerHTML='❌ Erreur';
+      lotTableBody.rows[i].cells[3].className='status-error';
+      console.error(person.to_name, err);
+    }
+  }
+  alert('Lot terminé ! Pause avant prochain lot si nécessaire.');
+});
+
+loadContacts();
 </script>
+
 </body>
 </html>
