@@ -135,9 +135,10 @@ footer {
 emailjs.init("ScT_WhLLgCRgSJWt6");
 
 const batchSize = 2; // 2 emails par lot
-const delay = 5000;
+const delay = 5000;   // délai entre les lots en ms
 let contacts = [];
 let currentBatch = [];
+let nextLotReady = true; // indique si le prochain lot peut être envoyé
 
 const templates = [
   { id:"template_dssfafd", title:"🛒 Articles en vente", content:"Bonjour {{to_name}},\nDécouvrez nos articles : https://business-tv.vercel.app/" },
@@ -148,31 +149,35 @@ const templates = [
 const templateSelect = document.getElementById('templateSelect');
 const previewBox = document.getElementById('previewBox');
 const lotTableBody = document.querySelector('#lotTable tbody');
+const nextLotCountdown = document.createElement('p');
+nextLotCountdown.id = 'nextLotCountdown';
+document.querySelector('main').appendChild(nextLotCountdown);
 
+// Remplissage du select
 templates.forEach(t=>{
   const option = document.createElement('option');
   option.value=t.id; option.textContent=t.title;
   templateSelect.appendChild(option);
 });
 
+// Aperçu du template
 document.getElementById('previewBtn').addEventListener('click', ()=>{
   const selected = templates.find(t=>t.id===templateSelect.value);
   previewBox.textContent = selected.content;
 });
 
-// Contacts avec deux lots
+// Chargement des contacts
 async function loadContacts() {
   contacts = [
-    // Lot 1
-    {"to_name":"Mom","to_email":"mom502615@gmail.com"},
-    {"to_name":"BTV","to_email":"btv495355@gmail.com"},
-    // Lot 2
-    {"to_name":"Michel","to_email":"konomichel8@gmail.com"},
-    {"to_name":"Michel","to_email":"konomichel2@gmail.com"}
+    {to_name:"Mom", to_email:"mom502615@gmail.com", profile_pic:"https://example.com/mom.png"},
+    {to_name:"BTV", to_email:"btv495355@gmail.com", profile_pic:"https://example.com/btv.png"},
+    {to_name:"Michel", to_email:"dalyawa529@gmail.com", profile_pic:"https://example.com/dalia.png"},
+    {to_name:"Michel", to_email:"konomichel2@gmail.com", profile_pic:"https://example.com/michel2.png"}
   ];
   createLotButtons();
 }
 
+// Création des boutons de lots
 function createLotButtons(){
   const container = document.getElementById('lotsContainer');
   container.innerHTML='';
@@ -185,6 +190,7 @@ function createLotButtons(){
   }
 }
 
+// Affichage d’un lot
 function showLot(lotNumber){
   const start=(lotNumber-1)*batchSize;
   const end=start+batchSize;
@@ -197,8 +203,31 @@ function showLot(lotNumber){
   });
 }
 
+// Compteur avant prochain lot
+function startNextLotCountdown() {
+  const sendBtn = document.getElementById('sendLotBtn');
+  let remaining = delay / 1000;
+  nextLotReady = false;
+  sendBtn.disabled = true;
+
+  const countdown = setInterval(() => {
+    nextLotCountdown.textContent = `Prochain lot disponible dans ${remaining}s`;
+    remaining--;
+
+    if (remaining < 0) {
+      clearInterval(countdown);
+      sendBtn.disabled = false;
+      nextLotCountdown.textContent = '';
+      nextLotReady = true;
+    }
+  }, 1000);
+}
+
+// Envoi d’un lot
 document.getElementById('sendLotBtn').addEventListener('click', async ()=>{
+  if(!nextLotReady) { alert("Patientez le temps du compte à rebours !"); return; }
   if(currentBatch.length===0){ alert("Sélectionnez un lot !"); return; }
+
   const templateId = templateSelect.value;
   const selectedTemplate = templates.find(t=>t.id===templateId);
   alert(`Début envoi lot avec template "${selectedTemplate.title}"`);
@@ -209,7 +238,11 @@ document.getElementById('sendLotBtn').addEventListener('click', async ()=>{
       await emailjs.send(
         "service_t2oycjs",
         templateId,
-        { to_name: person.to_name, name:"Business TV", temps:new Date().toLocaleString() }
+        { 
+          to_name: person.to_name, 
+          profile_pic: person.profile_pic, 
+          temps:new Date().toLocaleString() 
+        }
       );
       lotTableBody.rows[i].cells[3].innerHTML='✅ Envoyé';
       lotTableBody.rows[i].cells[3].className='status-success';
@@ -219,7 +252,9 @@ document.getElementById('sendLotBtn').addEventListener('click', async ()=>{
       console.error(person.to_name, err);
     }
   }
-  alert('Lot terminé ! Pause avant prochain lot si nécessaire.');
+
+  alert('Lot terminé ! Pause avant le prochain lot.');
+  startNextLotCountdown();
 });
 
 loadContacts();
