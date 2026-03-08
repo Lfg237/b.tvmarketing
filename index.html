@@ -169,6 +169,7 @@ document.getElementById('previewBtn').addEventListener('click', ()=>{
 // Chargement des contacts
 async function loadContacts() {
   contacts = [
+
   {to_name:"Mom", to_email:"mom502615@gmail.com", profile_pic:"https://example.com/mom.png"},
   {to_name:"BTV", to_email:"btv495355@gmail.com", profile_pic:"https://example.com/btv.png"},
   {to_name:"dalia", to_email:"dalyawa529@gmail.com", profile_pic:"https://example.com/dalia.png"},
@@ -186,8 +187,37 @@ async function loadContacts() {
   {to_name:"Recrutement Nkombiz", to_email:"recrutementnkombiz@gmail.com", profile_pic:"https://example.com/user.png"},
   {to_name:"Elflamam", to_email:"elflamam@gmail.com", profile_pic:"https://example.com/user.png"},
   {to_name:"IPRH", to_email:"infoiprh@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Robert Mbong", to_email:"robertmbong18@gmail.com", profile_pic:"https://example.com/user.png"}
-];
+  {to_name:"Robert Mbong", to_email:"robertmbong18@gmail.com", profile_pic:"https://example.com/user.png"},
+
+  {to_name:"Derick Tella", to_email:"dericktella4@gmail.com", profile_pic:"https://example.com/user.png"},
+  {to_name:"User", to_email:"d25284703@gmail.com", profile_pic:"https://example.com/user.png"},
+  {to_name:"Archange Michel", to_email:"archangemichel237@gmail.com", profile_pic:"https://example.com/user.png"},
+  {to_name:"Archange Michel 2", to_email:"archangemichel420@gmail.com", profile_pic:"https://example.com/user.png"},
+  {to_name:"Virginia Mbome", to_email:"virginiembomeruth@gmail.com", profile_pic:"https://example.com/user.png"},
+  {to_name:"Brasseries Cameroun", to_email:"CamerounDesBrasseries@gmail.com", profile_pic:"https://example.com/user.png"},
+  {to_name:"Ariel Jardin", to_email:"Arieljardin2023@gmail.com", profile_pic:"https://example.com/user.png"},
+  {to_name:"Siddiki Amadou", to_email:"siddikiamadousiddiki@gmail.com", profile_pic:"https://example.com/user.png"},
+  {to_name:"Dusch Monde", to_email:"duschmonde25@yahoo.fr", profile_pic:"https://example.com/user.png"},
+  {to_name:"Jardin Nature", to_email:"jardinnature44@gmail.com", profile_pic:"https://example.com/user.png"},
+  {to_name:"Green Insurance", to_email:"contact@green-insurance-brokerage.com", profile_pic:"https://example.com/user.png"},
+  {to_name:"Prosoft Africa", to_email:"secretary@prosoftafrica.com", profile_pic:"https://example.com/user.png"},
+  {to_name:"Marie Varloteaux", to_email:"varloteauxmarie@gmail.com", profile_pic:"https://example.com/user.png"},
+  {to_name:"Beau Paysage", to_email:"beaupaysage84@gmail.com", profile_pic:"https://example.com/user.png"},
+  {to_name:"Forest4Dev", to_email:"forest4dev@gmail.com", profile_pic:"https://example.com/user.png"},
+  {to_name:"SNK Foundation", to_email:"contact@snk.foundation", profile_pic:"https://example.com/user.png"},
+  {to_name:"CKJ Cameroun", to_email:"contact@ckj.cm", profile_pic:"https://example.com/user.png"}
+
+  ];
+
+  // suppression automatique des doublons
+  const seen = new Set();
+  contacts = contacts.filter(c => {
+    const email = c.to_email.toLowerCase();
+    if(seen.has(email)) return false;
+    seen.add(email);
+    return true;
+  });
+
   createLotButtons();
 }
 
