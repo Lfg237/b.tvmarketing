@@ -44,23 +44,21 @@ main {
   box-shadow:0 0 25px rgba(0,0,0,0.1);
 }
 
-select {
-  width:100%; padding:12px;
-  border-radius:8px;
-  border:1px solid #ccc;
+select, button {
+  width:100%;
+  padding:12px;
   margin-bottom:15px;
   font-size:16px;
+  border-radius:8px;
+  border:1px solid #ccc;
 }
 
 button {
-  padding:10px 18px;
+  background: linear-gradient(to right, #6a11cb, #2575fc);
+  color:white;
   border:none;
-  border-radius:8px;
   cursor:pointer;
   font-weight:bold;
-  color:white;
-  background: linear-gradient(to right, #6a11cb, #2575fc);
-  margin:5px 0;
   transition: all 0.3s ease;
 }
 button:hover {
@@ -98,6 +96,11 @@ footer {
   color:#555;
   margin-top:20px;
 }
+
+@media(max-width:768px){
+  header{flex-direction:column;text-align:center;}
+  table, th, td{font-size:12px;}
+}
 </style>
 </head>
 <body>
@@ -109,7 +112,10 @@ footer {
 
 <main>
 <label for="templateSelect">Choisir un template :</label>
-<select id="templateSelect"></select>
+<select id="templateSelect">
+  <!-- Ajouter manuellement d'autres templates ici -->
+  <option value="template_xqc4p09" selected>Template principal</option>
+</select>
 <button id="previewBtn">Voir Aperçu</button>
 
 <div id="previewBox">Le contenu du message apparaîtra ici...</div>
@@ -134,17 +140,11 @@ footer {
 <script>
 emailjs.init("ScT_WhLLgCRgSJWt6");
 
- const batchSize = 20;
+const batchSize = 20;
 const delay = 8000;
 let contacts = [];
 let currentBatch = [];
-let nextLotReady = true; // indique si le prochain lot peut être envoyé
-
-const templates = [
-  { id:"template_dssfafd", title:"🛒 Articles en vente", content:"Bonjour {{to_name}},\nDécouvrez nos articles : https://business-tv.vercel.app/" },
-  { id:"template_joboffers", title:"💼 Offres d'emploi", content:"Bonjour {{to_name}},\nConsultez les nouvelles offres : https://workshopkmer.vercel.app/#job1" },
-  { id:"template_newsletter", title:"📢 Newsletter Business TV", content:"Bonjour {{to_name}},\nVoici notre newsletter du jour." }
-];
+let nextLotReady = true;
 
 const templateSelect = document.getElementById('templateSelect');
 const previewBox = document.getElementById('previewBox');
@@ -153,63 +153,51 @@ const nextLotCountdown = document.createElement('p');
 nextLotCountdown.id = 'nextLotCountdown';
 document.querySelector('main').appendChild(nextLotCountdown);
 
-// Remplissage du select
-templates.forEach(t=>{
-  const option = document.createElement('option');
-  option.value=t.id; option.textContent=t.title;
-  templateSelect.appendChild(option);
-});
-
 // Aperçu du template
 document.getElementById('previewBtn').addEventListener('click', ()=>{
-  const selected = templates.find(t=>t.id===templateSelect.value);
-  previewBox.textContent = selected.content;
+  const templateId = templateSelect.value;
+  previewBox.textContent = `Aperçu du template : ${templateId}`;
 });
 
 // Chargement des contacts
 async function loadContacts() {
   contacts = [
-
-  {to_name:"Mom", to_email:"mom502615@gmail.com", profile_pic:"https://example.com/mom.png"},
-  {to_name:"BTV", to_email:"btv495355@gmail.com", profile_pic:"https://example.com/btv.png"},
-  {to_name:"dalia", to_email:"dalyawa529@gmail.com", profile_pic:"https://example.com/dalia.png"},
-
-  {to_name:"cfpf sorawell", to_email:"cfpf.sorawell@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"CNPS Mimboman", to_email:"cps.mimboman@cnps.cm", profile_pic:"https://example.com/user.png"},
-  {to_name:"Gozen Service", to_email:"canditature@gozenservice.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Donaldson King", to_email:"donaldsonking98@gamil.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Scan Patriotic", to_email:"scanpatriotic@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"COTCO HR", to_email:"COTCO.HR@etscotco.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Metro Acad", to_email:"metro.acad@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Afrique Formation", to_email:"contact@afriqueformation-conseils.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Complexe Santa Lucia", to_email:"complexesantalucia1@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"TotalEnergies MG", to_email:"MG-recrutement@totalenergies.mg", profile_pic:"https://example.com/user.png"},
-  {to_name:"Recrutement Nkombiz", to_email:"recrutementnkombiz@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Elflamam", to_email:"elflamam@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"IPRH", to_email:"infoiprh@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Robert Mbong", to_email:"robertmbong18@gmail.com", profile_pic:"https://example.com/user.png"},
-
-  {to_name:"Derick Tella", to_email:"dericktella4@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"User", to_email:"d25284703@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Archange Michel", to_email:"archangemichel237@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Archange Michel 2", to_email:"archangemichel420@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Virginia Mbome", to_email:"virginiembomeruth@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Brasseries Cameroun", to_email:"CamerounDesBrasseries@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Ariel Jardin", to_email:"Arieljardin2023@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Siddiki Amadou", to_email:"siddikiamadousiddiki@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Dusch Monde", to_email:"duschmonde25@yahoo.fr", profile_pic:"https://example.com/user.png"},
-  {to_name:"Jardin Nature", to_email:"jardinnature44@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Green Insurance", to_email:"contact@green-insurance-brokerage.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Prosoft Africa", to_email:"secretary@prosoftafrica.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Marie Varloteaux", to_email:"varloteauxmarie@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Beau Paysage", to_email:"beaupaysage84@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"Forest4Dev", to_email:"forest4dev@gmail.com", profile_pic:"https://example.com/user.png"},
-  {to_name:"SNK Foundation", to_email:"contact@snk.foundation", profile_pic:"https://example.com/user.png"},
-  {to_name:"CKJ Cameroun", to_email:"contact@ckj.cm", profile_pic:"https://example.com/user.png"}
-
+    {to_name:"Mom", to_email:"mom502615@gmail.com", profile_pic:"https://example.com/mom.png"},
+    {to_name:"BTV", to_email:"btv495355@gmail.com", profile_pic:"https://example.com/btv.png"},
+    {to_name:"dalia", to_email:"dalyawa529@gmail.com", profile_pic:"https://example.com/dalia.png"},
+    {to_name:"cfpf sorawell", to_email:"cfpf.sorawell@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"CNPS Mimboman", to_email:"cps.mimboman@cnps.cm", profile_pic:"https://example.com/user.png"},
+    {to_name:"Gozen Service", to_email:"canditature@gozenservice.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Donaldson King", to_email:"donaldsonking98@gamil.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Scan Patriotic", to_email:"scanpatriotic@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"COTCO HR", to_email:"COTCO.HR@etscotco.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Metro Acad", to_email:"metro.acad@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Afrique Formation", to_email:"contact@afriqueformation-conseils.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Complexe Santa Lucia", to_email:"complexesantalucia1@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"TotalEnergies MG", to_email:"MG-recrutement@totalenergies.mg", profile_pic:"https://example.com/user.png"},
+    {to_name:"Recrutement Nkombiz", to_email:"recrutementnkombiz@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Elflamam", to_email:"elflamam@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"IPRH", to_email:"infoiprh@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Robert Mbong", to_email:"robertmbong18@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Derick Tella", to_email:"dericktella4@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"User", to_email:"d25284703@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Archange Michel", to_email:"archangemichel237@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Archange Michel 2", to_email:"archangemichel420@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Virginia Mbome", to_email:"virginiembomeruth@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Brasseries Cameroun", to_email:"CamerounDesBrasseries@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Ariel Jardin", to_email:"Arieljardin2023@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Siddiki Amadou", to_email:"siddikiamadousiddiki@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Dusch Monde", to_email:"duschmonde25@yahoo.fr", profile_pic:"https://example.com/user.png"},
+    {to_name:"Jardin Nature", to_email:"jardinnature44@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Green Insurance", to_email:"contact@green-insurance-brokerage.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Prosoft Africa", to_email:"secretary@prosoftafrica.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Marie Varloteaux", to_email:"varloteauxmarie@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Beau Paysage", to_email:"beaupaysage84@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"Forest4Dev", to_email:"forest4dev@gmail.com", profile_pic:"https://example.com/user.png"},
+    {to_name:"SNK Foundation", to_email:"contact@snk.foundation", profile_pic:"https://example.com/user.png"},
+    {to_name:"CKJ Cameroun", to_email:"contact@ckj.cm", profile_pic:"https://example.com/user.png"}
   ];
 
-  // suppression automatique des doublons
   const seen = new Set();
   contacts = contacts.filter(c => {
     const email = c.to_email.toLowerCase();
@@ -221,7 +209,6 @@ async function loadContacts() {
   createLotButtons();
 }
 
-// Création des boutons de lots
 function createLotButtons(){
   const container = document.getElementById('lotsContainer');
   container.innerHTML='';
@@ -234,7 +221,6 @@ function createLotButtons(){
   }
 }
 
-// Affichage d’un lot
 function showLot(lotNumber){
   const start=(lotNumber-1)*batchSize;
   const end=start+batchSize;
@@ -247,7 +233,6 @@ function showLot(lotNumber){
   });
 }
 
-// Compteur avant prochain lot
 function startNextLotCountdown() {
   const sendBtn = document.getElementById('sendLotBtn');
   let remaining = delay / 1000;
@@ -267,21 +252,18 @@ function startNextLotCountdown() {
   }, 1000);
 }
 
-// Envoi d’un lot
 document.getElementById('sendLotBtn').addEventListener('click', async ()=>{
   if(!nextLotReady) { alert("Patientez le temps du compte à rebours !"); return; }
   if(currentBatch.length===0){ alert("Sélectionnez un lot !"); return; }
 
-  const templateId = templateSelect.value;
-  const selectedTemplate = templates.find(t=>t.id===templateId);
-  alert(`Début envoi lot avec template "${selectedTemplate.title}"`);
+  const selectedTemplate = templateSelect.value;
 
   for(let i=0;i<currentBatch.length;i++){
     const person=currentBatch[i];
     try{
       await emailjs.send(
         "service_t2oycjs",
-        templateId,
+        selectedTemplate,
         { 
           to_name: person.to_name, 
           profile_pic: person.profile_pic, 
