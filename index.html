@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>EmailJS - Test Lots Automatiques</title>
+<title>EmailJS - Test Mobile Lots</title>
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 <style>
 body {
@@ -15,88 +15,102 @@ body {
 header {
   background: linear-gradient(90deg, #ff7e5f, #feb47b);
   color:white;
-  padding:20px;
+  padding:15px;
   display:flex;
   align-items:center;
   box-shadow:0 4px 8px rgba(0,0,0,0.2);
-  animation: headerAnim 2s ease-in-out;
 }
-@keyframes headerAnim {
-  0%{transform: translateY(-50px); opacity:0;}
-  100%{transform: translateY(0); opacity:1;}
-}
-
 header img {
-  width:70px; height:70px;
+  width:50px; height:50px;
   border-radius:50%;
-  margin-right:15px;
+  margin-right:10px;
   border:2px solid white;
 }
-
-header h1 { margin:0; font-size:26px; text-shadow:1px 1px 2px #333;}
+header h1 {
+  margin:0; font-size:20px; text-shadow:1px 1px 2px #333;
+}
 
 main {
-  max-width:1000px;
-  margin:20px auto;
+  max-width:600px;
+  margin:10px auto;
   background:white;
-  padding:25px;
-  border-radius:15px;
-  box-shadow:0 0 25px rgba(0,0,0,0.1);
+  padding:15px;
+  border-radius:12px;
+  box-shadow:0 0 15px rgba(0,0,0,0.1);
 }
 
 select {
-  width:100%; padding:12px;
-  border-radius:8px;
+  width:100%; padding:10px;
+  border-radius:6px;
   border:1px solid #ccc;
-  margin-bottom:15px;
-  font-size:16px;
+  margin-bottom:10px;
+  font-size:14px;
 }
 
 button {
-  padding:10px 18px;
+  padding:8px 14px;
   border:none;
-  border-radius:8px;
+  border-radius:6px;
   cursor:pointer;
   font-weight:bold;
   color:white;
   background: linear-gradient(to right, #6a11cb, #2575fc);
-  margin:5px 0;
+  margin:4px 0;
   transition: all 0.3s ease;
 }
+
 button:hover {
   transform: scale(1.05);
   background: linear-gradient(to right, #2575fc, #6a11cb);
-  box-shadow:0 4px 12px rgba(0,0,0,0.2);
+  box-shadow:0 3px 10px rgba(0,0,0,0.2);
 }
 
-#previewBox, #lotPreview {
-  border-radius:10px;
-  padding:15px;
-  margin:15px 0;
-  background: #fdf6e3;
-  border-left: 6px solid #ff7e5f;
-  max-height:250px; overflow:auto;
-  font-family:'Courier New', monospace;
-  color:#333;
+.table-wrapper {
+  overflow-x:auto;
+  border-radius:8px;
+  margin:10px 0;
 }
 
 table {
-  width:100%; border-collapse: collapse;
-  margin-top:10px;
+  width:100%;
+  border-collapse: collapse;
+  min-width:300px;
 }
-table, th, td { border:1px solid #ddd; }
-th { background:#ff7e5f; color:white; padding:10px;}
-td { padding:8px; }
+
+th, td {
+  border:1px solid #ddd;
+  padding:6px 8px;
+  white-space: nowrap;
+}
+
 .status-success { color:green; font-weight:bold; background:#e6f4ea;}
 .status-error { color:red; font-weight:bold; background:#fce8e6;}
 .status-pending { color:orange; font-weight:bold; background:#fff4e5;}
 
+#previewBox {
+  border-radius:10px;
+  padding:10px;
+  margin:10px 0;
+  background: #fdf6e3;
+  border-left: 5px solid #ff7e5f;
+  font-family:'Courier New', monospace;
+  color:#333;
+}
+
+#nextLotCountdown { margin:8px 0; font-weight:bold; color:#555;}
+
 footer {
   text-align:center;
-  padding:15px;
-  font-size:14px;
+  padding:10px;
+  font-size:12px;
   color:#555;
-  margin-top:20px;
+  margin-top:15px;
+}
+
+@media screen and (max-width: 480px) {
+  button { width:100%; font-size:16px; padding:10px 0; }
+  header h1 { font-size:18px; }
+  header img { width:40px; height:40px; }
 }
 </style>
 </head>
@@ -104,16 +118,13 @@ footer {
 
 <header>
   <img src="https://raw.githubusercontent.com/Lfg237/m-dias/main/Polish_20260223_163236698.png" alt="Profil">
-  <h1>EmailJS Pro - Test Lots Automatiques</h1>
+  <h1>EmailJS Mobile - Test Lots</h1>
 </header>
 
 <main>
 <label for="templateSelect">Choisir un template :</label>
-<select id="templateSelect">
-  <option value="template_xqc4p09">Template principal</option>
-</select>
-<button id="previewBtn">Voir Aperçu</button>
-
+<select id="templateSelect"></select>
+<button id="previewBtn">Voir le contenu</button>
 <div id="previewBox">Le contenu du message apparaîtra ici...</div>
 
 <h3>Lots disponibles :</h3>
@@ -121,13 +132,15 @@ footer {
 
 <div id="lotPreview">
   <h4>Détails du lot sélectionné :</h4>
-  <table id="lotTable">
-    <thead><tr><th>#</th><th>Nom</th><th>Email</th><th>Statut</th></tr></thead>
-    <tbody></tbody>
-  </table>
+  <div class="table-wrapper">
+    <table id="lotTable">
+      <thead><tr><th>#</th><th>Nom</th><th>Email</th><th>Statut</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <p id="nextLotCountdown"></p>
   <button id="sendLotBtn">Envoyer ce lot</button>
 </div>
-<p id="nextLotCountdown"></p>
 </main>
 
 <footer>
@@ -137,21 +150,33 @@ footer {
 <script>
 emailjs.init("ScT_WhLLgCRgSJWt6");
 
-const batchSize = 5; // lots de 5 contacts
-const delay = 8000; // 8 secondes entre les lots
+const batchSize = 5;
+const delay = 8000;
 let contacts = [];
 let currentBatch = [];
 let nextLotReady = true;
+
+const templates = [
+  { id:"template_xqc4p09", title:"🛒 Articles en vente", content:"Bonjour {{to_name}},\nDécouvrez nos articles : https://business-tv.vercel.app/" }
+  // Tu peux ajouter d'autres templates ici manuellement
+];
 
 const templateSelect = document.getElementById('templateSelect');
 const previewBox = document.getElementById('previewBox');
 const lotTableBody = document.querySelector('#lotTable tbody');
 const nextLotCountdown = document.getElementById('nextLotCountdown');
 
-// Aperçu du template
+// Remplissage du select
+templates.forEach(t=>{
+  const option = document.createElement('option');
+  option.value=t.id; option.textContent=t.title;
+  templateSelect.appendChild(option);
+});
+
+// Bouton voir contenu
 document.getElementById('previewBtn').addEventListener('click', ()=>{
-  const selected = templateSelect.value;
-  previewBox.textContent = "Contenu du template : " + selected;
+  const selected = templates.find(t=>t.id===templateSelect.value);
+  previewBox.textContent = selected.content;
 });
 
 // Chargement des contacts
@@ -193,7 +218,7 @@ async function loadContacts() {
     {to_name:"CKJ Cameroun", to_email:"contact@ckj.cm", profile_pic:"https://example.com/user.png"}
   ];
 
-  // suppression automatique des doublons
+  // suppression doublons
   const seen = new Set();
   contacts = contacts.filter(c => {
     const email = c.to_email.toLowerCase();
@@ -205,7 +230,6 @@ async function loadContacts() {
   createLotButtons();
 }
 
-// Création des boutons de lots
 function createLotButtons(){
   const container = document.getElementById('lotsContainer');
   container.innerHTML='';
@@ -218,7 +242,6 @@ function createLotButtons(){
   }
 }
 
-// Affichage d’un lot
 function showLot(lotNumber){
   const start=(lotNumber-1)*batchSize;
   const end=start+batchSize;
@@ -231,7 +254,6 @@ function showLot(lotNumber){
   });
 }
 
-// Compteur avant prochain lot
 function startNextLotCountdown() {
   const sendBtn = document.getElementById('sendLotBtn');
   let remaining = delay / 1000;
@@ -241,7 +263,6 @@ function startNextLotCountdown() {
   const countdown = setInterval(() => {
     nextLotCountdown.textContent = `Prochain lot disponible dans ${remaining}s`;
     remaining--;
-
     if (remaining < 0) {
       clearInterval(countdown);
       sendBtn.disabled = false;
@@ -251,16 +272,13 @@ function startNextLotCountdown() {
   }, 1000);
 }
 
-// Envoi d’un lot
 document.getElementById('sendLotBtn').addEventListener('click', async ()=>{
   if(!nextLotReady) { alert("Patientez le temps du compte à rebours !"); return; }
   if(currentBatch.length===0){ alert("Sélectionnez un lot !"); return; }
 
   const templateId = templateSelect.value;
-  alert(`Début envoi lot avec template "${templateSelect.options[templateSelect.selectedIndex].text}"`);
-
-  let successCount = 0;
-  let failedContacts = [];
+  const selectedTemplate = templates.find(t=>t.id===templateId);
+  alert(`Début envoi lot avec template "${selectedTemplate.title}"`);
 
   for(let i=0;i<currentBatch.length;i++){
     const person=currentBatch[i];
@@ -276,20 +294,14 @@ document.getElementById('sendLotBtn').addEventListener('click', async ()=>{
       );
       lotTableBody.rows[i].cells[3].innerHTML='✅ Envoyé';
       lotTableBody.rows[i].cells[3].className='status-success';
-      successCount++;
     }catch(err){
       lotTableBody.rows[i].cells[3].innerHTML='❌ Erreur';
       lotTableBody.rows[i].cells[3].className='status-error';
-      failedContacts.push({name: person.to_name, email: person.to_email});
       console.error(person.to_name, err);
     }
   }
 
-  alert(`Lot terminé !\n✅ Envoyés : ${successCount}\n❌ Échecs : ${failedContacts.length}`);
-  if(failedContacts.length>0){
-    console.table(failedContacts);
-  }
-
+  alert('Lot terminé ! Pause avant le prochain lot.');
   startNextLotCountdown();
 });
 
