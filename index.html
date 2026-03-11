@@ -284,14 +284,15 @@ document.getElementById('sendLotBtn').addEventListener('click', async ()=>{
     const person=currentBatch[i];
     try{
       await emailjs.send(
-        "service_t2oycjs",
-        templateId,
-        { 
-          to_name: person.to_email, 
-          profile_pic: person.profile_pic, 
-          temps:new Date().toLocaleString() 
-        }
-      );
+  "service_t2oycjs",
+  templateId,
+  { 
+    to_name: person.to_name,
+    to_email: person.to_email,
+    profile_pic: person.profile_pic,
+    temps:new Date().toLocaleString()
+  }
+);
       lotTableBody.rows[i].cells[3].innerHTML='✅ Envoyé';
       lotTableBody.rows[i].cells[3].className='status-success';
     }catch(err){
